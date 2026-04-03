@@ -28,14 +28,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     // Audit Logs
     Route::resource('audit-logs', 'AuditLogsController', ['except' => ['create', 'store', 'edit', 'update', 'destroy']]);
 
-    // Epaper
-    Route::delete('epapers/destroy', 'EpaperController@massDestroy')->name('epapers.massDestroy');
-    Route::post('epapers/media', 'EpaperController@storeMedia')->name('epapers.storeMedia');
-    Route::post('epapers/ckmedia', 'EpaperController@storeCKEditorImages')->name('epapers.storeCKEditorImages');
-    Route::post('epapers/parse-csv-import', 'EpaperController@parseCsvImport')->name('epapers.parseCsvImport');
-    Route::post('epapers/process-csv-import', 'EpaperController@processCsvImport')->name('epapers.processCsvImport');
-    Route::resource('epapers', 'EpaperController');
-});
+   Route::resource('categories', 'CategoryController');
+    Route::resource('tags', 'TagController');
+    Route::resource('products', 'ProductController');
+   
+   });
 Route::group(['prefix' => 'profile', 'as' => 'profile.', 'namespace' => 'Auth', 'middleware' => ['auth']], function () {
     // Change password
     if (file_exists(app_path('Http/Controllers/Auth/ChangePasswordController.php'))) {
@@ -46,15 +43,3 @@ Route::group(['prefix' => 'profile', 'as' => 'profile.', 'namespace' => 'Auth', 
     }
 });
 
-
-Route::get('/epaper', [App\Http\Controllers\Custom\EpaperController::class, 'index'])->name('epaper.index');
-Route::get('/epaper/{epaper}', [App\Http\Controllers\Custom\EpaperController::class, 'show'])->name('custom.epaper-detail');
-Route::get('/pdf-view/{media}', function ($media) {
-    $file = \Spatie\MediaLibrary\MediaCollections\Models\Media::findOrFail($media);
-    $path = storage_path("app/public/{$file->id}/{$file->file_name}");
-
-    return response()->file($path, [
-        'Content-Type' => 'application/pdf',
-        'Cross-Origin-Resource-Policy' => 'cross-origin',
-    ]);
-})->name('pdf.view');
