@@ -1,5 +1,6 @@
 <?php
 
+
 Route::redirect('/', '/login');
 Route::get('/home', function () {
     if (session('status')) {
@@ -31,6 +32,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
    Route::resource('categories', 'CategoryController');
     Route::resource('tags', 'TagController');
     Route::resource('products', 'ProductController');
+    Route::resource('orders', 'OrderController');
+    Route::resource('heroes', 'HeroController');
+    Route::resource('abouts', 'AboutController');
+    Route::resource('services', 'ServiceController');
+    Route::resource('testimonials', 'TestimonialController');
+    Route::resource('offers', 'OfferController');
+    Route::resource('contacts', 'ContactController');
+    Route::get('settings', 'SettingController@index')->name('settings.index');
+    Route::post('settings', 'SettingController@update')->name('settings.update');
+
    
    });
 Route::group(['prefix' => 'profile', 'as' => 'profile.', 'namespace' => 'Auth', 'middleware' => ['auth']], function () {
