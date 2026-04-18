@@ -126,7 +126,7 @@
 
 @else
     <button class="btn btn-secondary w-100 py-3" disabled>
-        Cart is Empty
+        Cart is Empty   
     </button>
 @endif
 
