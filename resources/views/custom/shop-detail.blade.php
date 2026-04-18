@@ -99,78 +99,127 @@
 					</div>
 					<!-- category icon -->
 				
-					<!-- category price -->
-					<div class="category-price">
-						<h1>₹ {{ number_format($product->price, 2) }}</h1>
-					</div>
+				
 					
 				
 
-                    <table class="category-table">
-						<tr>
-							<!-- table data -->
-							<td class="table-title"> SKU </td>
-							<td class="table-text"> {{ $product->slug }} </td>
-						</tr>
-						<tr>
-							<!-- table data -->
-							<td class="table-title"> Categories </td>
-							<td class="table-text">  {{ $product->category->name }} </td>
-						</tr>
-						<tr>
-							<!-- table data -->
-							<td class="table-title"> Tags </td>
-<td class="table-text">
-    @foreach($product->tags as $tag)
-        {{ $tag->name }}@if(!$loop->last), @endif
-    @endforeach
-</td>						</tr>
-                         <tr>
-							<!-- table data -->
-							<td class="table-title"> Bulk Quantity </td>
-							<td class="table-text">  {{ $product->min_order_qty }} </td>
-						</tr>
+                  <table class="category-table">
 
-                        <tr>
-							<!-- table data -->
-							<td class="table-title"> Bulk Price </td>
-							<td class="table-text">  ₹ {{ number_format($product->bulk_price, 2) }} </td>
+    {{-- PRICE --}}
+    <tr>
+        <td class="table-title"> Price </td>
+        <td class="table-text">
+            ₹ {{ number_format($product->base_price, 2) }}
 
-						</tr>
+            @if($product->sale_type == 'tray')
+                <small>(Per Tray)</small>
+            @elseif($product->sale_type == 'piece')
+                <small>(Per Bird)</small>
+            @elseif($product->sale_type == 'weight')
+                <small>(Per Kg)</small>
+            @endif
+        </td>
+    </tr>
 
-                       
+    {{-- SKU --}}
+    <tr>
+        <td class="table-title"> SKU </td>
+        <td class="table-text"> {{ $product->slug }} </td>
+    </tr>
 
+    {{-- CATEGORY --}}
+    <tr>
+        <td class="table-title"> Category </td>
+        <td class="table-text"> {{ $product->category->name ?? '-' }} </td>
+    </tr>
 
-					</table> <!-- category table End -->
+    {{-- TAGS --}}
+    <tr>
+        <td class="table-title"> Tags </td>
+        <td class="table-text">
+            @forelse($product->tags as $tag)
+                {{ $tag->name }}@if(!$loop->last), @endif
+            @empty
+                -
+            @endforelse
+        </td>
+    </tr>
+
+    {{-- SALE TYPE --}}
+    <tr>
+        <td class="table-title"> Sale Type </td>
+        <td class="table-text">
+            @if($product->sale_type == 'tray')
+                Tray (30 Eggs)
+            @elseif($product->sale_type == 'piece')
+                Per Piece (Hen)
+            @elseif($product->sale_type == 'weight')
+                Per Kg
+            @endif
+        </td>
+    </tr>
+
+    {{-- BULK PRICING --}}
+    <tr>
+        <td class="table-title"> Bulk Pricing </td>
+        <td class="table-text">
+
+            @forelse($product->bulkPrices as $bulk)
+                <div>
+                    {{ $bulk->min_qty }}+ Qty → ₹{{ number_format($bulk->price, 2) }} /per {{ $product->sale_type == 'tray' ? 'Tray' : ($product->sale_type == 'piece' ? 'Piece' : 'Kg') }}
+                </div>
+            @empty
+                No bulk pricing
+            @endforelse
+
+        </td>
+    </tr>
+
+</table> <!-- category table End -->
 					<div class="category-count-button">
-						<!-- product count -->
-						<div class="quantity">
-    <div class="cart-plus-minus">
-        <input 
-            class="cart-plus-minus-box" 
-            value="{{ $product->min_order_qty }}" 
-            type="text"
-        >
-        <div class="dec ctnbutton">-</div>
-        <div class="inc ctnbutton">+</div>
+
+    <!-- Quantity -->
+    <div class="quantity">
+        <div class="cart-plus-minus">
+            <input 
+                id="qty-{{ $product->id }}"
+                class="cart-plus-minus-box" 
+                value="1"
+                type="number"
+                min="1"
+            >
+            <div class="dec ctnbutton">-</div>
+            <div class="inc ctnbutton">+</div>
+        </div>
     </div>
+
+    <!-- Add to Cart -->
+    <div class="category-button">
+        <a href="#"
+           class="add-to-cart-btn"
+           data-id="{{ $product->id }}">
+            Add to Cart <i class="bi bi-cart3"></i>
+        </a>
+    </div>
+
 </div>
-						<!-- product button -->
-						<div class="category-button">
-    <a href="#"
-       class="add-to-cart-btn"
-       data-id="{{ $product->id }}">
-        Add to Cart <i class="bi bi-cart3"></i>
-    </a>
-</div>
+
 
 <script>
 document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
 
     btn.addEventListener('click', function(e) {
-        e.preventDefault(); // 🔥 page reload stop
+        e.preventDefault();
 
-        let productId = this.getAttribute('data-id');
+        let productId = this.dataset.id;
+
+        let qtyInput = document.getElementById('qty-' + productId);
+        let qty = qtyInput ? parseInt(qtyInput.value) : 1;
+
+        if (!qty || qty <= 0) {
+            alert('Please enter valid quantity');
+            return;
+        }
 
         fetch("{{ route('cart.add') }}", {
             method: "POST",
@@ -179,22 +228,22 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                product_id: productId
+                product_id: productId,
+                qty: qty
             })
         })
         .then(res => res.json())
-        .then(data => {
+        .then(() => {
             alert('Added to cart 🛒');
         })
         .catch(() => {
-            alert('Error');
+            alert('Error adding to cart');
         });
 
     });
 
 });
 </script>
-					</div>
 					<!-- category table -->
 					
 				</div>

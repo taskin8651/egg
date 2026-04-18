@@ -1,125 +1,186 @@
 @extends('custom.master')
 @section('content')
 
-<!--================ Breadcumb =================-->
 <div class="breadcumb-area d-flex align-items-center">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12 text-center">
-                <div class="breadcumb-content">
-                    <h4>Cart</h4>
-                    <ul>
-                        <li>
-                            <a href="/">
-                                <i class="bi bi-house-door-fill"></i> Home
-                            </a>
-                        </li>
-                        <li><i class="bi bi-slash-lg"></i> Cart</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+    <div class="container text-center">
+        <h4>Cart</h4>
+        <a href="/">Home</a> / Cart
     </div>
 </div>
 
-<!--================ CART =================-->
 <div class="cart-section pt-80 pb-80">
-    <div class="container">
+<div class="container">
 
-        @php
-            $cart = session('cart', []);
-            $total = 0;
-        @endphp
+@php
+    $cart = session('cart', []);
+    $total = 0;
+@endphp
 
-        @if(count($cart) > 0)
+@if(count($cart))
 
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle text-center">
+<div class="table-responsive">
+<table class="table table-bordered text-center align-middle">
 
-                <thead class="table-dark">
-                    <tr>
-                        <th>Image</th>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Total</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
+<thead class="table-dark">
+<tr>
+    <th>Image</th>
+    <th>Product</th>
+    <th>Price</th>
+    <th>Qty</th>
+    <th>Total</th>
+    <th>Action</th>
+</tr>
+</thead>
 
-                <tbody>
-                    @foreach($cart as $id => $item)
+<tbody>
 
-                        @php
-                            $itemTotal = $item['price'] * $item['qty'];
-                            $total += $itemTotal;
-                        @endphp
+@foreach($cart as $id => $item)
 
-                        <tr>
-                            <td>
-                                <img src="{{ $item['image'] ?: asset('assets/images/default.png') }}"
-                                     width="70">
-                            </td>
+@php
+    $itemTotal = $item['price'] * $item['qty'];
+    $total += $itemTotal;
+@endphp
 
-                            <td>{{ $item['name'] }}</td>
+<tr>
 
-                            <td>₹{{ number_format($item['price'], 2) }}</td>
+<td>
+    <img src="{{ $item['image'] ?: asset('assets/images/default.png') }}"
+         width="70">
+</td>
 
-                            <td>{{ $item['qty'] }}</td>
+<td>{{ $item['name'] }}</td>
 
-                            <td>₹{{ number_format($itemTotal, 2) }}</td>
+<td>
+    ₹{{ number_format($item['price'], 2) }}
+    <br>
+    <small class="text-muted">
+        per {{ $item['sale_type'] == 'tray' ? 'Tray' : ($item['sale_type'] == 'piece' ? 'Piece' : 'Kg') }}
+    </small>
+</td>
 
-                            <td>
-                                <a href="{{ route('cart.remove', $id) }}"
-                                   class="btn btn-danger btn-sm">
-                                    Remove
-                                </a>
-                            </td>
-                        </tr>
+<td>{{ $item['qty'] }}
+     <br>
+    <small class="text-muted">
+        per {{ $item['sale_type'] == 'tray' ? 'Tray' : ($item['sale_type'] == 'piece' ? 'Piece' : 'Kg') }}
+    </small>
+</td>
 
-                    @endforeach
-                </tbody>
+<td>₹{{ number_format($itemTotal, 2) }} 
+    
+</td>
+<td>
+    <button class="remove-btn"
+        style="background:#dc3545;color:white;border:none;padding:6px 10px;border-radius:4px;"
+        data-id="{{ $id }}">
+        Remove
+    </button>
+</td>
 
-            </table>
-        </div>
+</tr>
 
-        <!-- TOTAL -->
-        <div class="row mt-4">
-            <div class="col-lg-6"></div>
+@endforeach
 
-            <div class="col-lg-6">
-                <div class="border p-4 rounded bg-light">
+</tbody>
+</table>
+</div>
+<div class="row mt-5 justify-content-end">
 
-                    <h5>Cart Total</h5>
-                    <hr>
+    <div class="col-lg-5">
 
-                    <h4>₹{{ number_format($total, 2) }}</h4>
+        <div class="shadow-sm rounded p-4 bg-white border">
 
-                    <div class="mt-3">
-                        <a href="#" class="btn btn-success w-100">
-                            Proceed to Checkout
-                        </a>
-                    </div>
+            <h5 class="fw-bold mb-3">Order Summary</h5>
 
-                </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Subtotal</span>
+                <span>₹{{ number_format($total, 2) }}</span>
             </div>
-        </div>
 
-        @else
+            <div class="d-flex justify-content-between mb-2">
+                <span>Delivery</span>
+                <span class="text-success">Free</span>
+            </div>
 
-        <!-- EMPTY CART -->
-        <div class="text-center py-5">
-            <h4>Your cart is empty 😢</h4>
-            <p>Add some products to continue shopping</p>
 
-            <a href="{{ route('shop') }}" class="btn btn-primary mt-3">
-                Go to Shop
+            <div class="d-flex justify-content-between mb-3">
+                <strong>Total</strong>
+                <strong class="text-primary fs-5">
+                    ₹{{ number_format($total, 2) }}
+                </strong>
+            </div>
+
+          @if(count(session('cart', [])) > 0)
+
+    @auth
+        <a href="{{ route('checkout.index') }}"
+           class="btn btn-success w-100 py-3 fw-semibold d-flex justify-content-center align-items-center gap-2">
+            Proceed to Checkout
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    @else
+        <a href="{{ route('login') }}"
+           class="btn btn-warning w-100 py-3 fw-semibold">
+            Login to Checkout
+        </a>
+    @endauth
+
+@else
+    <button class="btn btn-secondary w-100 py-3" disabled>
+        Cart is Empty
+    </button>
+@endif
+
+            <a href="{{ route('shop') }}"
+               class="btn btn-outline-secondary w-100 mt-2">
+                Continue Shopping
             </a>
-        </div>
 
-        @endif
+        </div>
 
     </div>
+
 </div>
+
+@else
+
+<div class="text-center py-5">
+    <h4>Your cart is empty 😢</h4>
+    <p>Add products to continue</p>
+
+    <a href="{{ route('shop') }}" class="btn btn-primary mt-3">
+        Go to Shop
+    </a>
+</div>
+
+@endif
+
+</div>
+</div>
+
+{{-- REMOVE SCRIPT --}}
+<script>
+document.querySelectorAll('.remove-btn').forEach(btn => {
+
+    btn.addEventListener('click', function(){
+
+        let id = this.dataset.id;
+
+        fetch("{{ route('cart.remove') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: id
+            })
+        })
+        .then(res => res.json())
+        .then(() => location.reload());
+
+    });
+
+});
+</script>
 
 @endsection

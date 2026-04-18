@@ -9,28 +9,39 @@ use App\Models\Product;
 class CartController extends Controller
 {
     public function add(Request $request)
-    {
-        $product = Product::findOrFail($request->product_id);
+{
+    $product = Product::with('bulkPrices')->findOrFail($request->product_id);
 
-        $cart = session()->get('cart', []);
+    $qty = $request->qty ?? 1;
 
-        if(isset($cart[$product->id])) {
-            $cart[$product->id]['qty'] += 1;
-        } else {
-            $cart[$product->id] = [
-                "name" => $product->name,
-                "price" => $product->price,
-                "image" => $product->getFirstMediaUrl('product_thumbnail'),
-                "qty" => 1
-            ];
-        }
+    // ✅ BULK PRICE APPLY
+    $price = $product->getPrice($qty);
 
-        session()->put('cart', $cart);
+    $cart = session()->get('cart', []);
 
-      return response()->json([
-    'success' => true
-]);
+    if(isset($cart[$product->id])) {
+
+        $cart[$product->id]['qty'] += $qty;
+
+        // 🔥 update price again
+        $newQty = $cart[$product->id]['qty'];
+        $cart[$product->id]['price'] = $product->getPrice($newQty);
+
+    } else {
+
+        $cart[$product->id] = [
+            "name" => $product->name,
+            "price" => $price,
+            "image" => $product->getFirstMediaUrl('product_thumbnail'),
+            "qty" => $qty,
+            "sale_type" => $product->sale_type,
+        ];
     }
+
+    session()->put('cart', $cart);
+
+    return response()->json(['success' => true]);
+}
 
     public function index()
     {

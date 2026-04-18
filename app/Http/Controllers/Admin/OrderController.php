@@ -10,9 +10,9 @@ use App\Models\Product;
 use App\Models\OrderItem;
 
 
+
 class OrderController extends Controller
 {
-    use App\Models\Order;
 
 public function index()
 {

@@ -1,6 +1,8 @@
 <?php
 use App\Http\Controllers\Custom\ShopController;
 use App\Http\Controllers\Custom\CartController;
+use App\Http\Controllers\Custom\CheckoutController;
+
 
 Route::redirect('/', '/login');
 Route::get('/home', function () {
@@ -66,5 +68,14 @@ Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/shop/{slug}', [ShopController::class, 'show'])->name('shop.show');
 
 Route::post('/add-to-cart', [CartController::class, 'add'])->name('cart.add');
+
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::get('/remove-cart/{id}', [CartController::class, 'remove'])->name('cart.remove');
+
+Route::post('/remove-cart', [CartController::class, 'remove'])->name('cart.remove');
+
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+Route::get('/user/dashboard', [App\Http\Controllers\User\DashboardController::class, 'index'])
+    ->middleware('auth')
+    ->name('user.dashboard');
