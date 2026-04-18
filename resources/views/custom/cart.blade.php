@@ -117,7 +117,7 @@
             Proceed to Checkout
             <i class="bi bi-arrow-right"></i>
         </a>
-    @else
+    @else 
         <a href="{{ route('login') }}"
            class="btn btn-warning w-100 py-3 fw-semibold">
             Login to Checkout
