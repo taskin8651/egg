@@ -157,8 +157,43 @@
 </div>
 						<!-- product button -->
 						<div class="category-button">
-							<a href="cart.html">Add to Cart <i class="bi bi-cart3"></i></a>
-						</div>
+    <a href="#"
+       class="add-to-cart-btn"
+       data-id="{{ $product->id }}">
+        Add to Cart <i class="bi bi-cart3"></i>
+    </a>
+</div>
+
+<script>
+document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+
+    btn.addEventListener('click', function(e) {
+        e.preventDefault(); // 🔥 page reload stop
+
+        let productId = this.getAttribute('data-id');
+
+        fetch("{{ route('cart.add') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert('Added to cart 🛒');
+        })
+        .catch(() => {
+            alert('Error');
+        });
+
+    });
+
+});
+</script>
 					</div>
 					<!-- category table -->
 					

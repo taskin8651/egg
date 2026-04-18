@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Models\BulkPrice;
+use App\Models\PriceHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProductController extends Controller
 {
@@ -32,8 +33,8 @@ class ProductController extends Controller
             'name' => 'required',
             'category_id' => 'required',
             'type' => 'required|in:egg,hen',
-            'price' => 'required|numeric',
-            'min_order_qty' => 'required|integer|min:1',
+            'sale_type' => 'required|in:tray,piece,weight',
+            'base_price' => 'required|numeric',
         ]);
 
         $product = Product::create([
@@ -41,33 +42,52 @@ class ProductController extends Controller
             'slug' => Str::slug($request->name . '-' . time()),
             'category_id' => $request->category_id,
             'type' => $request->type,
-            'price' => $request->price,
-            'bulk_price' => $request->bulk_price,
-            'min_order_qty' => $request->min_order_qty,
-            'stock' => $request->stock,
+            'sale_type' => $request->sale_type,
+            'base_price' => $request->base_price,
+            'stock' => $request->stock ?? 0,
             'description' => $request->description,
             'status' => 1,
         ]);
 
-        // ✅ Tags safe sync
+        // ✅ Price history (first entry)
+        PriceHistory::create([
+            'product_id' => $product->id,
+            'price' => $request->base_price,
+            'date' => now(),
+        ]);
+
+        // ✅ Tags
         $product->tags()->sync($request->tags ?? []);
 
-        // ✅ Thumbnail (single)
-        if ($request->hasFile('thumbnail')) {
-            $product->addMediaFromRequest('thumbnail')
-                    ->toMediaCollection('product_thumbnail');
+        // ✅ Bulk pricing
+        if ($request->bulk_qty) {
+            foreach ($request->bulk_qty as $i => $qty) {
+                if ($qty && $request->bulk_price[$i]) {
+                    BulkPrice::create([
+                        'product_id' => $product->id,
+                        'min_qty' => $qty,
+                        'price' => $request->bulk_price[$i],
+                    ]);
+                }
+            }
         }
 
-        // ✅ Gallery (multiple)
+        // ✅ Thumbnail
+        if ($request->hasFile('thumbnail')) {
+            $product->addMediaFromRequest('thumbnail')
+                ->toMediaCollection('product_thumbnail');
+        }
+
+        // ✅ Gallery
         if ($request->hasFile('gallery')) {
-            foreach ($request->file('gallery') as $image) {
-                $product->addMedia($image)
-                        ->toMediaCollection('product_gallery');
+            foreach ($request->file('gallery') as $img) {
+                $product->addMedia($img)
+                    ->toMediaCollection('product_gallery');
             }
         }
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Product Created');
+            ->with('success', 'Product created successfully');
     }
 
     public function edit(Product $product)
@@ -75,65 +95,85 @@ class ProductController extends Controller
         $categories = Category::pluck('name', 'id');
         $tags = Tag::pluck('name', 'id');
 
+        $product->load('bulkPrices');
+
         return view('admin.products.edit', compact('product', 'categories', 'tags'));
     }
 
-   public function update(Request $request, Product $product)
-{
-    $request->validate([
-        'name' => 'required',
-        'category_id' => 'required',
-        'type' => 'required|in:egg,hen',
-        'price' => 'required|numeric',
-        'min_order_qty' => 'required|integer|min:1',
-    ]);
+    public function update(Request $request, Product $product)
+    {
+        $request->validate([
+            'name' => 'required',
+            'category_id' => 'required',
+            'type' => 'required|in:egg,hen',
+            'sale_type' => 'required|in:tray,piece,weight',
+            'base_price' => 'required|numeric',
+        ]);
 
-    $product->update([
-        'name' => $request->name,
-        'slug' => Str::slug($request->name . '-' . time()),
-        'category_id' => $request->category_id,
-        'type' => $request->type,
-        'price' => $request->price,
-        'bulk_price' => $request->bulk_price,
-        'min_order_qty' => $request->min_order_qty,
-        'stock' => $request->stock,
-        'description' => $request->description,
-    ]);
+        // 🔥 check price change before update
+        $oldPrice = $product->base_price;
 
-    // ✅ Tags
-    $product->tags()->sync($request->tags ?? []);
+        $product->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name . '-' . time()),
+            'category_id' => $request->category_id,
+            'type' => $request->type,
+            'sale_type' => $request->sale_type,
+            'base_price' => $request->base_price,
+            'stock' => $request->stock ?? 0,
+            'description' => $request->description,
+        ]);
 
-    // ✅ Thumbnail (replace)
-    if ($request->hasFile('thumbnail')) {
-        $product->clearMediaCollection('product_thumbnail');
-
-        $product->addMediaFromRequest('thumbnail')
-                ->toMediaCollection('product_thumbnail');
-    }
-
-    // ✅ Gallery (append only, NO delete)
-    if ($request->hasFile('gallery')) {
-        foreach ($request->file('gallery') as $image) {
-            $product->addMedia($image)
-                    ->toMediaCollection('product_gallery');
+        // ✅ price history only if changed
+        if ($oldPrice != $request->base_price) {
+            PriceHistory::create([
+                'product_id' => $product->id,
+                'price' => $request->base_price,
+                'date' => now(),
+            ]);
         }
-    }
 
-    return redirect()->route('admin.products.index')
-        ->with('success', 'Product Updated Successfully');
-}
+        // ✅ Tags
+        $product->tags()->sync($request->tags ?? []);
+
+        // ✅ Bulk reset + add
+        $product->bulkPrices()->delete();
+
+        if ($request->bulk_qty) {
+            foreach ($request->bulk_qty as $i => $qty) {
+                if ($qty && $request->bulk_price[$i]) {
+                    BulkPrice::create([
+                        'product_id' => $product->id,
+                        'min_qty' => $qty,
+                        'price' => $request->bulk_price[$i],
+                    ]);
+                }
+            }
+        }
+
+        // ✅ Thumbnail
+        if ($request->hasFile('thumbnail')) {
+            $product->clearMediaCollection('product_thumbnail');
+
+            $product->addMediaFromRequest('thumbnail')
+                ->toMediaCollection('product_thumbnail');
+        }
+
+        // ✅ Gallery (append only)
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $img) {
+                $product->addMedia($img)
+                    ->toMediaCollection('product_gallery');
+            }
+        }
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Product updated successfully');
+    }
 
     public function destroy(Product $product)
     {
-        // ✅ media bhi delete hoga automatically
         $product->delete();
-
-        return back()->with('success', 'Deleted');
+        return back()->with('success', 'Product deleted');
     }
-
-    public function deleteMedia(Request $request)
-{
-    Media::findOrFail($request->media_id)->delete();
-    return back()->with('success', 'Image deleted');
-}
 }

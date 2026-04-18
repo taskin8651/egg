@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Custom\ShopController;
+use App\Http\Controllers\Custom\CartController;
 
 Route::redirect('/', '/login');
 Route::get('/home', function () {
@@ -63,3 +64,7 @@ Route::view('/','custom.home');
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/shop/{slug}', [ShopController::class, 'show'])->name('shop.show');
+
+Route::post('/add-to-cart', [CartController::class, 'add'])->name('cart.add');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::get('/remove-cart/{id}', [CartController::class, 'remove'])->name('cart.remove');

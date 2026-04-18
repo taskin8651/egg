@@ -1,162 +1,139 @@
 @extends('layouts.admin')
 @section('content')
 
-<div class="mb-8 flex items-center justify-between">
-    <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Add Product</h1>
-        <p class="text-sm text-gray-500 mt-1">Create new product (Egg / Hen)</p>
-    </div>
+<div class="max-w-5xl mx-auto">
 
-    <a href="{{ route('admin.products.index') }}"
-       class="text-sm text-blue-600 hover:underline">
-        ← Back
-    </a>
-</div>
+<h2 class="text-2xl font-bold mb-6">Add Product (Wholesale)</h2>
 
 <form method="POST" enctype="multipart/form-data"
       action="{{ route('admin.products.store') }}">
 @csrf
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-2 gap-6">
 
-    {{-- PRODUCT INFO --}}
-    <div class="bg-white border rounded-lg shadow-sm p-6">
-
-        <h2 class="text-sm font-semibold mb-4 uppercase">Product Info</h2>
+    {{-- LEFT --}}
+    <div>
 
         {{-- NAME --}}
-        <div class="mb-4">
-            <label>Name *</label>
-            <input type="text" name="name" value="{{ old('name') }}"
-                   class="w-full border rounded-md p-2">
-            @error('name') <p class="text-red-500 text-xs">{{ $message }}</p> @enderror
-        </div>
+        <label>Name</label>
+        <input type="text" name="name"
+               class="w-full border p-2 mb-3 rounded">
 
         {{-- CATEGORY --}}
-        <div class="mb-4">
-            <label>Category</label>
-            <select name="category_id" class="w-full border p-2 rounded">
-                @foreach($categories as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            </select>
-        </div>
+        <label>Category</label>
+        <select name="category_id" class="w-full border p-2 mb-3 rounded">
+            @foreach($categories as $id => $name)
+                <option value="{{ $id }}">{{ $name }}</option>
+            @endforeach
+        </select>
 
         {{-- TYPE --}}
-        <div class="mb-4">
-            <label>Type</label>
-            <select name="type" class="w-full border p-2 rounded">
-                <option value="egg">Egg</option>
-                <option value="hen">Hen</option>
-            </select>
-        </div>
+        <label>Product Type</label>
+        <select name="type" class="w-full border p-2 mb-3 rounded">
+            <option value="egg">Egg</option>
+            <option value="hen">Hen</option>
+        </select>
 
-        {{-- PRICE --}}
-        <div class="mb-4">
-            <label>Price</label>
-            <input type="number" name="price" step="0.01"
-                   class="w-full border p-2 rounded">
-        </div>
+        {{-- SALE TYPE --}}
+        <label>Sale Type</label>
+        <select name="sale_type" class="w-full border p-2 mb-3 rounded">
+            <option value="tray">Tray (Egg)</option>
+            <option value="piece">Piece (Hen)</option>
+            <option value="weight">Weight (Kg)</option>
+        </select>
 
-        {{-- BULK PRICE --}}
-        <div>
-            <label>Bulk Price</label>
-            <input type="number" name="bulk_price" step="0.01"
-                   class="w-full border p-2 rounded">
-        </div>
+        {{-- BASE PRICE --}}
+        <label>Base Price (Market Rate)</label>
+        <input type="number" step="0.01" name="base_price"
+               class="w-full border p-2 mb-3 rounded">
+
+        {{-- STOCK --}}
+        <label>Stock</label>
+        <input type="number" name="stock"
+               class="w-full border p-2 mb-3 rounded">
 
     </div>
 
-    {{-- EXTRA INFO --}}
-    <div class="bg-white border rounded-lg shadow-sm p-6">
-
-        <h2 class="text-sm font-semibold mb-4 uppercase">Additional Info</h2>
-
-        {{-- MIN QTY --}}
-        <div class="mb-4">
-            <label>Min Order Qty</label>
-            <input type="number" name="min_order_qty"
-                   class="w-full border p-2 rounded">
-        </div>
-
-        {{-- STOCK --}}
-        <div class="mb-4">
-            <label>Stock</label>
-            <input type="number" name="stock"
-                   class="w-full border p-2 rounded">
-        </div>
-
-        {{-- 🔥 THUMBNAIL --}}
-        <div class="mb-4">
-            <label>Thumbnail (Main Image)</label>
-            <input type="file" name="thumbnail" class="w-full border p-2 rounded">
-        </div>
-
-        {{-- 🔥 GALLERY --}}
-        <div class="mb-4">
-            <label>Gallery Images (Multiple)</label>
-            <input type="file" name="gallery[]" multiple
-                   class="w-full border p-2 rounded">
-        </div>
+    {{-- RIGHT --}}
+    <div>
 
         {{-- TAGS --}}
-        <div>
-            <div class="flex justify-between mb-2">
-                <label>Tags</label>
-
-                <div class="text-xs space-x-2">
-                    <button type="button" id="select-all" class="text-blue-600">Select All</button>
-                    <button type="button" id="deselect-all" class="text-blue-600">Deselect</button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                @foreach($tags as $id => $tag)
-                    <label class="flex items-center gap-2 text-sm">
-                        <input type="checkbox"
-                               name="tags[]"
-                               value="{{ $id }}"
-                               class="tag-checkbox">
-                        {{ $tag }}
-                    </label>
-                @endforeach
-            </div>
+        <label>Tags</label>
+        <div class="grid grid-cols-2 gap-2 border p-2 mb-3 rounded">
+            @foreach($tags as $id => $tag)
+                <label>
+                    <input type="checkbox" name="tags[]" value="{{ $id }}">
+                    {{ $tag }}
+                </label>
+            @endforeach
         </div>
+
+        {{-- DESCRIPTION --}}
+        <label>Description</label>
+        <textarea name="description"
+                  class="w-full border p-2 mb-3 rounded"></textarea>
+
+        {{-- THUMBNAIL --}}
+        <label>Thumbnail</label>
+        <input type="file" name="thumbnail"
+               class="w-full mb-3">
+
+        {{-- GALLERY --}}
+        <label>Gallery Images</label>
+        <input type="file" name="gallery[]"
+               multiple class="w-full mb-3">
 
     </div>
 
 </div>
 
-{{-- DESCRIPTION --}}
-<div class="mt-6 bg-white border rounded-lg shadow-sm p-6">
-    <label>Description</label>
-    <textarea name="description" class="w-full border p-2 rounded"></textarea>
+{{-- 🔥 BULK PRICING --}}
+<div class="mt-6">
+
+    <h3 class="text-lg font-semibold mb-3">Bulk Pricing</h3>
+
+    <div id="bulk-wrapper">
+
+        <div class="flex gap-3 mb-2">
+            <input type="number" name="bulk_qty[]"
+                   placeholder="Min Qty"
+                   class="border p-2 w-1/2">
+
+            <input type="number" step="0.01" name="bulk_price[]"
+                   placeholder="Price"
+                   class="border p-2 w-1/2">
+        </div>
+
+    </div>
+
+    <button type="button" onclick="addBulk()"
+            class="bg-gray-600 text-white px-3 py-1 mt-2 rounded">
+        + Add More
+    </button>
+
 </div>
 
 {{-- BUTTON --}}
-<div class="mt-6 flex gap-3">
-    <button class="bg-blue-600 text-white px-6 py-2 rounded">
+<div class="mt-6">
+    <button class="bg-green-600 text-white px-6 py-2 rounded">
         Save Product
     </button>
-
-    <a href="{{ route('admin.products.index') }}" class="text-gray-600">
-        Cancel
-    </a>
 </div>
 
 </form>
 
-@endsection
+</div>
 
-
-@section('scripts')
+{{-- JS --}}
 <script>
-document.getElementById('select-all').onclick = () => {
-    document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = true);
-}
-
-document.getElementById('deselect-all').onclick = () => {
-    document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+function addBulk() {
+    document.getElementById('bulk-wrapper').innerHTML += `
+        <div class="flex gap-3 mb-2">
+            <input type="number" name="bulk_qty[]" placeholder="Min Qty" class="border p-2 w-1/2">
+            <input type="number" name="bulk_price[]" placeholder="Price" class="border p-2 w-1/2">
+        </div>
+    `;
 }
 </script>
+
 @endsection
