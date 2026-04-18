@@ -128,7 +128,7 @@
     <button class="btn btn-secondary w-100 py-3" disabled>
         Cart is Empty   
     </button>
-@endif
+@endif  
 
             <a href="{{ route('shop') }}"
                class="btn btn-outline-secondary w-100 mt-2">
