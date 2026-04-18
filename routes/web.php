@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\Custom\ShopController;
 
 Route::redirect('/', '/login');
 Route::get('/home', function () {
@@ -54,3 +54,8 @@ Route::group(['prefix' => 'profile', 'as' => 'profile.', 'namespace' => 'Auth', 
     }
 });
 
+// Frontend routes
+Route::view('/','custom.home');
+
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+Route::get('/shop/{slug}', [ShopController::class, 'show'])->name('shop.show');
