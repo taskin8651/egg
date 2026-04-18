@@ -34,8 +34,12 @@ class Product extends Model implements HasMedia
     }
 
     // 🔥 Media Collection
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('product_images')->singleFile();
-    }
+   public function registerMediaCollections(): void
+{
+    // ✅ Single main image
+    $this->addMediaCollection('product_thumbnail')->singleFile();
+
+    // ✅ Multiple images (gallery)
+    $this->addMediaCollection('product_gallery');
+}
 }

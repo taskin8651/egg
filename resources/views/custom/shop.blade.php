@@ -35,7 +35,7 @@
 
         <div class="row">
             <div class="col-lg-12">
-                <div class="section_title text-center style_six pb-75">
+                <div class="section_title text-center style_six ">
                     <h1 class="pb-13">NEW IN STORE</h1>
                     <p>Latest products from our store</p>
                 </div>
@@ -44,35 +44,89 @@
 
         <div class="product_cart">
             <div class="row">
+<div class="product_tab_btn">
 
-                @foreach($products as $product)
-                <div class="col-lg-3 col-md-6">
-                    <div class="product_single_item">
+    <!-- ALL -->
+    <button 
+        class="{{ !request('type') ? 'active' : '' }}" 
+        onclick="filterProduct('')">
+        All <i class="flaticon flaticon-right-arrow"></i>
+    </button>
 
-                        <div class="product_thumb">
-                            <img src="{{ $product->getFirstMediaUrl('product_images') ?: asset('assets/images/default.png') }}" alt="{{ $product->name }}">
+    <!-- HEN -->
+    <button 
+        class="{{ request('type') == 'hen' ? 'active' : '' }}" 
+        onclick="filterProduct('hen')">
+        Hens <i class="flaticon flaticon-right-arrow"></i>
+    </button>
 
-                            <div class="buddy_btn_home_three product_btn">
-                                <a href="#">Add to cart <i class="flaticon flaticon-right-arrow"></i></a>
-                            </div>
-                        </div>
+    <!-- EGG -->
+    <button 
+        class="{{ request('type') == 'egg' ? 'active' : '' }}" 
+        onclick="filterProduct('egg')">
+        Egg <i class="flaticon flaticon-right-arrow"></i>
+    </button>
 
-                        <div class="product_content">
-                            <div class="product_star">
-                                <i class="fa fa-star active"></i>
-                                <i class="fa fa-star active"></i>
-                                <i class="fa fa-star active"></i>
-                                <i class="fa fa-star active"></i>
-                                <i class="fa fa-star"></i>
-                            </div>
+</div>
+<script>
+function filterProduct(type) {
+    let url = new URL(window.location.href);
 
-                            <h3>{{ $product->name }}</h3>
-                            <p>₹{{ $product->price }}</p>
-                        </div>
+    if(type === '') {
+        url.searchParams.delete('type'); // 🔥 ALL ke liye remove
+    } else {
+        url.searchParams.set('type', type);
+    }
 
-                    </div>
+    window.location.href = url.toString();
+}
+</script>
+
+@forelse($products as $product)
+    <div class="col-lg-3 col-md-6">
+        <div class="product_single_item">
+
+            <!-- Image -->
+            <div class="product_thumb">
+                <a href="{{ route('shop.show', $product->slug) }}">
+                    <img 
+                        src="{{ $product->getFirstMediaUrl('product_images') ?: asset('assets/images/default.png') }}" 
+                        alt="{{ $product->name }}"
+                    >
+                </a>
+
+                <div class="buddy_btn_home_three product_btn">
+                    <a href="#" data-id="{{ $product->id }}">
+                        Add to cart 
+                        <i class="flaticon flaticon-right-arrow"></i>
+                    </a>
                 </div>
-                @endforeach
+            </div>
+
+            <!-- Content -->
+            <div class="product_content">
+
+                <h3>
+                    <a href="{{ route('shop.show', $product->slug) }}">
+                        {{ $product->name }}
+                    </a>
+                </h3>
+
+                <p>
+                    ₹{{ number_format($product->price, 2) }}
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+
+@empty
+    <div class="col-12 text-center">
+        <p>No products available</p>
+    </div>
+@endforelse
+
 
             </div>
         </div>

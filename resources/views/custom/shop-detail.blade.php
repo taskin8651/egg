@@ -38,92 +38,130 @@
 			<div class="col-lg-6 col-md-6">
 				<!-- / tab -->
 				<div class="tab style-three">
-					<!-- / tab_content -->
-					<div class="tab_content">
 
-						<!-- / tabs_item -->
-						<div class="tabs_item">
-							<img src="assets/images/inner-img/tabs1.html" alt="">
-						</div> 
-						<!-- / tabs_item -->
-						<div class="tabs_item">
-							<img src="assets/images/inner-img/tabs3.html" alt="">
-						</div> 
-						<!-- / tabs_item -->
-						<div class="tabs_item">
-							<img src="assets/images/inner-img/tabs2.html" alt="">
-						</div> 
+    <!-- MAIN IMAGE (Thumbnail first) -->
+    <div class="tab_content">
 
-					</div> 
+        {{-- Thumbnail --}}
+        @if($product->getFirstMediaUrl('product_thumbnail'))
+            <div class="tabs_item">
+                <img src="{{ $product->getFirstMediaUrl('product_thumbnail') }}"
+                     alt="{{ $product->name }}">
+            </div>
+        @endif
 
-					<ul class="tabs">
-						<li><a href="#"><img src="assets/images/inner-img/tab1.html" alt=""></a></li>
-						<li><a href="#"><img src="assets/images/inner-img/tab3.html" alt=""></a></li>
-						<li><a href="#"><img src="assets/images/inner-img/tab2.html" alt=""></a></li>
-					</ul> <!-- / tabs -->
-				</div> 
+        {{-- Gallery Images --}}
+        @forelse($product->getMedia('product_gallery') as $media)
+            <div class="tabs_item">
+                <img src="{{ $media->getUrl() }}" alt="{{ $product->name }}">
+            </div>
+        @empty
+            @if(!$product->getFirstMediaUrl('product_thumbnail'))
+                <div class="tabs_item">
+                    <img src="{{ asset('assets/images/default.png') }}" alt="No Image">
+                </div>
+            @endif
+        @endforelse
+
+    </div>
+
+    <!-- THUMBNAILS -->
+    <ul class="tabs">
+
+        {{-- Thumbnail --}}
+        @if($product->getFirstMediaUrl('product_thumbnail'))
+            <li>
+                <a href="#">
+                    <img src="{{ $product->getFirstMediaUrl('product_thumbnail') }}"
+                         width="80" alt="">
+                </a>
+            </li>
+        @endif
+
+        {{-- Gallery --}}
+        @foreach($product->getMedia('product_gallery') as $media)
+            <li>
+                <a href="#">
+                    <img src="{{ $media->getUrl() }}" width="80" alt="">
+                </a>
+            </li>
+        @endforeach
+
+    </ul>
+
+</div>
 			</div>	
 			<div class="col-lg-6 col-md-6">
 				<div class="shop-dtls-info">
 					<!-- category title -->
 					<div class="category-title">
-						<h2>Poultry Equipment</h2>
+						<h2>{{ $product->name }}</h2>
 					</div>
 					<!-- category icon -->
-					<div class="category-icon-list">
-						<ul>
-							<li><i class="bi bi-star-fill"></i></li>
-							<li><i class="bi bi-star-fill"></i></li>
-							<li><i class="bi bi-star-fill"></i></li>
-							<li><i class="bi bi-star-fill"></i></li>
-							<li><i class="bi bi-star"></i></li>
-							<li class="category-text"> 4.5(10+ Reviews) </li>
-						</ul>
-					</div>
+				
 					<!-- category price -->
 					<div class="category-price">
-						<h1> £150.98 <span>£190.00</span></h1>
+						<h1>₹ {{ number_format($product->price, 2) }}</h1>
 					</div>
-					<!-- description -->
-					<div class="category-description">
-						<p>Dramatically reinvent adaptive bandwidth vis reliable infrastructures to progressively iterate distributed interfaces for client-based. Intrinsicly are plagiarize one-to-one value after adaptive initiatives via equity invested manufactured products convergence.</p>
-					</div>
-					<!-- category color -->
-					<div class="category-color">
-						<p> Colors <span>Black & Yellow</span></p>
-					</div>
+					
+				
+
+                    <table class="category-table">
+						<tr>
+							<!-- table data -->
+							<td class="table-title"> SKU </td>
+							<td class="table-text"> {{ $product->slug }} </td>
+						</tr>
+						<tr>
+							<!-- table data -->
+							<td class="table-title"> Categories </td>
+							<td class="table-text">  {{ $product->category->name }} </td>
+						</tr>
+						<tr>
+							<!-- table data -->
+							<td class="table-title"> Tags </td>
+<td class="table-text">
+    @foreach($product->tags as $tag)
+        {{ $tag->name }}@if(!$loop->last), @endif
+    @endforeach
+</td>						</tr>
+                         <tr>
+							<!-- table data -->
+							<td class="table-title"> Bulk Quantity </td>
+							<td class="table-text">  {{ $product->min_order_qty }} </td>
+						</tr>
+
+                        <tr>
+							<!-- table data -->
+							<td class="table-title"> Bulk Price </td>
+							<td class="table-text">  ₹ {{ number_format($product->bulk_price, 2) }} </td>
+
+						</tr>
+
+                       
+
+
+					</table> <!-- category table End -->
 					<div class="category-count-button">
 						<!-- product count -->
 						<div class="quantity">
-							<div class="cart-plus-minus">
-								<input class="cart-plus-minus-box" value="0" type="text">
-								<div class="dec ctnbutton">-</div>
-								<div class="inc ctnbutton">+</div>
-							</div>
-						</div>
+    <div class="cart-plus-minus">
+        <input 
+            class="cart-plus-minus-box" 
+            value="{{ $product->min_order_qty }}" 
+            type="text"
+        >
+        <div class="dec ctnbutton">-</div>
+        <div class="inc ctnbutton">+</div>
+    </div>
+</div>
 						<!-- product button -->
 						<div class="category-button">
 							<a href="cart.html">Add to Cart <i class="bi bi-cart3"></i></a>
 						</div>
 					</div>
 					<!-- category table -->
-					<table class="category-table">
-						<tr>
-							<!-- table data -->
-							<td class="table-title"> SKU </td>
-							<td class="table-text"> Carburetors </td>
-						</tr>
-						<tr>
-							<!-- table data -->
-							<td class="table-title"> Categories </td>
-							<td class="table-text">  Decoration, Documents </td>
-						</tr>
-						<tr>
-							<!-- table data -->
-							<td class="table-title"> Tags </td>
-							<td class="table-text"> Calendar, Cup, Invitation, Magazine </td>
-						</tr>
-					</table> <!-- category table End -->
+					
 				</div>
 			</div>
 		</div>
@@ -143,51 +181,68 @@
 							<div class="tabs_item">
 								<!-- post comment -->
 								<div class="post-comment-description">
-									<p>Leverage existing competitive e-tailers for clicks-and-mortar materials. Continually pursue long-term high-impact innovation vis-a-vis low high-yield markets. Efficiently incentiv superior infrastructures without future-proof communities. Credibly whiteboard transparent resources before distinctive alignments. Progressively scale plug-and meta-services whereas standardized niches. Globally incentivize effective e-markets via intuitive architectures. Compellingly facilitate next-generation experiences vis-a-vis business core are in competencies. Globally enable synergistic platforms rather than high-payoff convergence. Progressively enhance low-risk high-yield scenarios without 24/365 imperatives. Top compellingly incentivize out-of-the-box</p>
-									<p class="pt-2">Meta-services whereas standardized niches. Globally incentivize effective e-markets via intuitive architectures. Compellingly facilitate next-generation experiences vis-a-vis business core are in competencies. Globally enable synergistic platforms rather than high-payoff convergence. Progressively enhance low-risk high-yield scenarios without 24/365 imperatives. Top compellingly incentivize out-of-the-box convergence for synergistic benefits.</p>
+									
+                                        {{ $product->description }}
+                                   
 								</div>
 							</div> 
 							<!-- / tabs_item -->
 							<div class="tabs_item">
-								<!-- post comment -->
-								<table class="tab-items-table">
-									<tr>
-										<!-- table data -->
-										<td class="table-title"> Stand Up </td>
-										<td class="table-text"> : KKAL </td>
-									</tr>
-									<tr class="tabs-bg">
-										<!-- table data -->
-										<td class="table-title"> Colors </td>
-										<td class="table-text"> : Black, Blue, Purple </td>
-									</tr>
-									<tr>
-										<!-- table data -->
-										<td class="table-title"> Weight </td>
-										<td class="table-text"> : 35 KG </td>
-									</tr>
-									<tr class="tabs-bg">
-										<!-- table data -->
-										<td class="table-title"> Wheels </td>
-										<td class="table-text"> : 12” air/ Wide Truck Sleek Trade </td>
-									</tr>
-									<tr>
-										<!-- table data -->
-										<td class="table-title"> Back Height </td>
-										<td class="table-text"> : 21.5” </td>
-									</tr>
-									<tr class="tabs-bg">
-										<!-- table data -->
-										<td class="table-title"> Address </td>
-										<td class="table-text"> : 18F Keangnam Landmark 72, PhamHung Str Hanoi, FL 100000 </td>
-									</tr>
-									<tr>
-										<!-- table data -->
-										<td class="table-title"> Rating </td>
-										<td class="table-text"> : 4.40 rating from 5 reviews <i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i> </td>
-									</tr>
-								</table> <!-- widget table End -->
-							</div> 
+    <table class="tab-items-table">
+
+        <tr>
+            <td class="table-title">Product Name</td>
+            <td class="table-text">: {{ $product->name }}</td>
+        </tr>
+
+        <tr class="tabs-bg">
+            <td class="table-title">Category</td>
+            <td class="table-text">: {{ $product->category->name ?? 'N/A' }}</td>
+        </tr>
+
+        <tr>
+            <td class="table-title">Price</td>
+            <td class="table-text">: ₹{{ number_format($product->price, 2) }}</td>
+        </tr>
+
+        <tr class="tabs-bg">
+            <td class="table-title">Bulk Price</td>
+            <td class="table-text">
+                : {{ $product->bulk_price ? '₹'.number_format($product->bulk_price, 2) : 'N/A' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td class="table-title">Minimum Order Qty</td>
+            <td class="table-text">: {{ $product->min_order_qty }}</td>
+        </tr>
+
+        <tr class="tabs-bg">
+            <td class="table-title">Stock</td>
+            <td class="table-text">: {{ $product->stock }}</td>
+        </tr>
+
+        <tr>
+            <td class="table-title">Type</td>
+            <td class="table-text">: {{ $product->type ?? 'N/A' }}</td>
+        </tr>
+
+        <tr class="tabs-bg">
+            <td class="table-title">Tags</td>
+            <td class="table-text">
+                : {{ $product->tags->pluck('name')->implode(', ') ?: 'N/A' }}
+            </td>
+        </tr>
+
+        <tr>
+            <td class="table-title">Status</td>
+            <td class="table-text">
+                : {{ $product->status ? 'Active' : 'Inactive' }}
+            </td>
+        </tr>
+
+    </table>
+</div>
 							<!-- / tabs_item -->
 							<div class="tabs_item">
 								<!-- post comment -->
@@ -199,34 +254,63 @@
 				</div>
 			</div>
 			<div class="col-lg-12">
-				<div class="product-item-title">
-					<h2>Related Products</h2>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-3 col-md-6">
-					<div class="product_single_item">
-						<div class="product_thumb">
-							<img src="assets/images/home_3/chicken1.html" alt="">
-							<div class="buddy_btn_home_three product_btn">
-								<a href="cart.html">Add to card <i class="flaticon flaticon-right-arrow"></i></a>
-							</div>
-						</div>
-						<div class="product_content">
-							<div class="product_star">
-								<i class="fa fa-star active"></i>
-								<i class="fa fa-star active"></i>
-								<i class="fa fa-star active"></i>
-								<i class="fa fa-star active"></i>
-								<i class="fa fa-star active"></i>
-							</div>
-							<h3>Chicken products</h3>
-							<p>$9.00</p>
-						</div>
-					</div>
-				</div>	
-				
-			</div>
+    <div class="product-item-title">
+        <h2>Related Products</h2>
+    </div>
+</div>
+
+<div class="row">
+
+@forelse($relatedProducts as $item)
+    <div class="col-lg-3 col-md-6">
+        <div class="product_single_item">
+
+            <div class="product_thumb">
+                <a href="{{ route('shop.show', $item->slug) }}">
+                    <img 
+                        src="{{ $item->getFirstMediaUrl('product_images') ?: asset('assets/images/default.png') }}" 
+                        alt="{{ $item->name }}"
+                    >
+                </a>
+
+                <div class="buddy_btn_home_three product_btn">
+                    <a href="#" data-id="{{ $item->id }}">
+                        Add to cart 
+                        <i class="flaticon flaticon-right-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="product_content">
+
+                <div class="product_star">
+                    <i class="fa fa-star active"></i>
+                    <i class="fa fa-star active"></i>
+                    <i class="fa fa-star active"></i>
+                    <i class="fa fa-star active"></i>
+                    <i class="fa fa-star"></i>
+                </div>
+
+                <h3>
+                    <a href="{{ route('shop.show', $item->slug) }}">
+                        {{ $item->name }}
+                    </a>
+                </h3>
+
+                <p>₹{{ number_format($item->price, 2) }}</p>
+
+            </div>
+
+        </div>
+    </div>
+
+@empty
+    <div class="col-12 text-center">
+        <p>No related products found</p>
+    </div>
+@endforelse
+
+</div>
 		</div>
 	</div>
 </div>

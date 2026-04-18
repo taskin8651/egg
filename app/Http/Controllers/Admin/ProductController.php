@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProductController extends Controller
 {
@@ -48,13 +49,21 @@ class ProductController extends Controller
             'status' => 1,
         ]);
 
-        // 🔥 Tags attach
-        $product->tags()->sync($request->tags);
+        // ✅ Tags safe sync
+        $product->tags()->sync($request->tags ?? []);
 
-        // 🔥 Image upload
-        if ($request->hasFile('image')) {
-            $product->addMediaFromRequest('image')
-                    ->toMediaCollection('product_images');
+        // ✅ Thumbnail (single)
+        if ($request->hasFile('thumbnail')) {
+            $product->addMediaFromRequest('thumbnail')
+                    ->toMediaCollection('product_thumbnail');
+        }
+
+        // ✅ Gallery (multiple)
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $image) {
+                $product->addMedia($image)
+                        ->toMediaCollection('product_gallery');
+            }
         }
 
         return redirect()->route('admin.products.index')
@@ -69,44 +78,62 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories', 'tags'));
     }
 
-    public function update(Request $request, Product $product)
-    {
-        $request->validate([
-            'name' => 'required',
-            'category_id' => 'required',
-            'type' => 'required|in:egg,hen',
-            'price' => 'required|numeric',
-            'min_order_qty' => 'required|integer|min:1',
-        ]);
+   public function update(Request $request, Product $product)
+{
+    $request->validate([
+        'name' => 'required',
+        'category_id' => 'required',
+        'type' => 'required|in:egg,hen',
+        'price' => 'required|numeric',
+        'min_order_qty' => 'required|integer|min:1',
+    ]);
 
-        $product->update([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name . '-' . time()),
-            'category_id' => $request->category_id,
-            'type' => $request->type,
-            'price' => $request->price,
-            'bulk_price' => $request->bulk_price,
-            'min_order_qty' => $request->min_order_qty,
-            'stock' => $request->stock,
-            'description' => $request->description,
-        ]);
+    $product->update([
+        'name' => $request->name,
+        'slug' => Str::slug($request->name . '-' . time()),
+        'category_id' => $request->category_id,
+        'type' => $request->type,
+        'price' => $request->price,
+        'bulk_price' => $request->bulk_price,
+        'min_order_qty' => $request->min_order_qty,
+        'stock' => $request->stock,
+        'description' => $request->description,
+    ]);
 
-        $product->tags()->sync($request->tags);
+    // ✅ Tags
+    $product->tags()->sync($request->tags ?? []);
 
-        if ($request->hasFile('image')) {
-            $product->clearMediaCollection('product_images');
+    // ✅ Thumbnail (replace)
+    if ($request->hasFile('thumbnail')) {
+        $product->clearMediaCollection('product_thumbnail');
 
-            $product->addMediaFromRequest('image')
-                    ->toMediaCollection('product_images');
-        }
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product Updated');
+        $product->addMediaFromRequest('thumbnail')
+                ->toMediaCollection('product_thumbnail');
     }
+
+    // ✅ Gallery (append only, NO delete)
+    if ($request->hasFile('gallery')) {
+        foreach ($request->file('gallery') as $image) {
+            $product->addMedia($image)
+                    ->toMediaCollection('product_gallery');
+        }
+    }
+
+    return redirect()->route('admin.products.index')
+        ->with('success', 'Product Updated Successfully');
+}
 
     public function destroy(Product $product)
     {
+        // ✅ media bhi delete hoga automatically
         $product->delete();
+
         return back()->with('success', 'Deleted');
     }
+
+    public function deleteMedia(Request $request)
+{
+    Media::findOrFail($request->media_id)->delete();
+    return back()->with('success', 'Image deleted');
+}
 }

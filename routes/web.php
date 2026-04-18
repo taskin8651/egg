@@ -31,7 +31,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
 
    Route::resource('categories', 'CategoryController');
     Route::resource('tags', 'TagController');
-    Route::resource('products', 'ProductController');
     Route::resource('orders', 'OrderController');
     Route::resource('heroes', 'HeroController');
     Route::resource('abouts', 'AboutController');
@@ -41,6 +40,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     Route::resource('contacts', 'ContactController');
     Route::get('settings', 'SettingController@index')->name('settings.index');
     Route::post('settings', 'SettingController@update')->name('settings.update');
+    
+    Route::resource('products', 'ProductController');
+    Route::post('products/delete-media',
+    [\App\Http\Controllers\Admin\ProductController::class, 'deleteMedia']
+)->name('products.deleteMedia');
 
    
    });
